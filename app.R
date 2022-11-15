@@ -11,6 +11,7 @@ data <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidyt
 
 library(shiny)
 library(dplyr)
+library(tidyverse)
 
 # Define UI for application 
 ui <- fluidPage(
@@ -18,7 +19,7 @@ ui <- fluidPage(
     # Application title
     titlePanel("Cocktailpedia"),
 
-    # Sidebar with a select input for  ingredient type
+    # Sidebar with a select input for ingredient type
         sidebarPanel(
           helpText('Chooese the ingredient you want'),
           selectInput('ingredient',
@@ -28,8 +29,20 @@ ui <- fluidPage(
           
         ),
 
-        # Show a plot of the generated distribution
+        # Show a table of the results
     dataTableOutput('name'),
+    
+    # Sidebar with a text input for ingredient type
+    sidebarPanel(
+      helpText('Type in the category of ingredient you want'), # the above one has so many ingredients and it's hard to navigate 
+      textInput('ingredient1',
+                  'Search by ingredient',
+                  value = 'rum'),
+      
+    ),
+    
+    # Show a table of the results
+    dataTableOutput('name1'),
     ###sidebar witha a select input for cocktail name
     sidebarPanel(
       helpText('Chooese the cocktail you want'),
@@ -40,14 +53,14 @@ ui <- fluidPage(
       
     ),
     
-    # Show a plot of the generated distribution
+    # Show a table of the results
     dataTableOutput('recipe')
     
         
     
 )
 
-# Define server logic required to draw a histogram
+
 server <- function(input, output) {
 
     #filter the the alcoholic name based on the ingredient
@@ -59,6 +72,16 @@ server <- function(input, output) {
   ###print the output
   output$name <- renderDataTable({
   cocktail_select()
+    
+  })
+  cocktail_search<-reactive({
+    data%>%
+      filter(str_detect(ingredient, paste0("(?i)",input$ingredient1)))%>%
+      select(name, ingredient)
+  })
+  ###print the output
+  output$name1 <- renderDataTable({
+    cocktail_search()
     
   })
   drink_recipe<-reactive({
